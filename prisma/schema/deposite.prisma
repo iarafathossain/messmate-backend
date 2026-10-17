@@ -1,0 +1,15 @@
+model Deposit {
+    id          String   @id @default(uuid()) @db.Uuid
+    memberId    String   @db.Uuid
+    amount      Decimal  @db.Decimal(10, 2)
+    depositDate DateTime @db.Date
+    note        String?
+    createdAt   DateTime @default(now())
+
+    // Each deposit belongs to one member
+    member    Member   @relation(fields: [memberId], references: [id], onDelete: Cascade)
+    updatedAt DateTime @updatedAt
+
+    @@index([memberId, depositDate])
+    @@map("deposits")
+}

@@ -1,0 +1,16 @@
+model Mess {
+    id           String   @id @default(uuid()) @db.Uuid
+    name         String
+    email        String   @unique
+    passwordHash String
+    messType     MessType
+    createdAt    DateTime @default(now())
+    updatedAt    DateTime @updatedAt
+
+    // One mess has many members, expenses, and deposits through its members
+    members   Member[]
+    mealRates MealRate?
+    expenses  Expense[]
+
+    @@map("mess")
+}

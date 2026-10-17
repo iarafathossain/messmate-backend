@@ -1,0 +1,12 @@
+model MealRate {
+    id           String   @id @default(uuid()) @db.Uuid
+    messId       String   @unique @db.Uuid
+    fullMealRate Decimal  @db.Decimal(10, 2)
+    halfMealRate Decimal  @db.Decimal(10, 2)
+    updatedAt    DateTime @updatedAt
+
+    // Each mess has one current meal-rate configuration
+    mess Mess @relation(fields: [messId], references: [id], onDelete: Cascade)
+
+    @@map("meal_rates")
+}
