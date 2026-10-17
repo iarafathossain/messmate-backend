@@ -3,6 +3,7 @@ import cors from "cors";
 import express, { Application } from "express";
 import path from "path";
 import { envVariables } from "./config/env";
+import { globalErrorHandler } from "./middlewares/global-error-handler";
 import { notFoundHandler } from "./middlewares/not-found";
 import { indexRoutes } from "./routes";
 
@@ -42,6 +43,7 @@ app.get("/api/health", (_req, res) => {
 });
 
 // Global error handler
+app.use(globalErrorHandler);
 
 // not found route handler
 app.use(notFoundHandler);
