@@ -46,7 +46,32 @@ const loginMess = catchAsync(async (req, res) => {
   });
 });
 
+const registerMember = catchAsync(async (req, res) => {
+  const { name, email, phone, password, messCode } = req.body;
+
+  const result = await authServices.registerMember({
+    name,
+    email,
+    phone,
+    password,
+    messCode,
+  });
+
+  // set cookie if access token is generated
+  if (result.accessToken) {
+    tokenUtils.setAccessTokenCookie(res, result.accessToken);
+  }
+
+  sendResponse(res, {
+    httpStatusCode: 201,
+    success: true,
+    message: "Member registered successfully",
+    data: result.user,
+  });
+});
+
 export const authControllers = {
   registerMess,
   loginMess,
+  registerMember,
 };

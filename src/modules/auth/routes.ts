@@ -1,7 +1,11 @@
 import { Router } from "express";
 import { validateRequest } from "../../middlewares/validate-request";
 import { authControllers } from "./controllers";
-import { loginMessZodSchema, registerMessZodSchema } from "./validators";
+import {
+  loginMessZodSchema,
+  registerMemberZodSchema,
+  registerMessZodSchema,
+} from "./validators";
 
 const router = Router();
 
@@ -17,6 +21,13 @@ router.post(
   "/login",
   validateRequest(loginMessZodSchema),
   authControllers.loginMess,
+);
+
+// POST: api/v1/auth/register-member
+router.post(
+  "/register-member",
+  validateRequest(registerMemberZodSchema),
+  authControllers.registerMember,
 );
 
 export const authRoutes = router;

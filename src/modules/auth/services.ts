@@ -3,7 +3,7 @@ import status from "http-status";
 import AppError from "../../errors/app-error";
 import { prisma } from "../../libs/prisma";
 import { tokenUtils } from "../../utils/token";
-import { IMessRegisterPayload } from "./interfaces";
+import { IMemberRegisterPayload, IMessRegisterPayload } from "./interfaces";
 
 const checkUser = async (email: string) => {
   // check if the user exists with the given email
@@ -14,6 +14,22 @@ const checkUser = async (email: string) => {
   });
 
   return user;
+};
+
+const checkDuplicatePhone = async (phone: string) => {
+  // check if the user exists with the given phone number
+  const user = await prisma.user.findUnique({
+    where: {
+      phone,
+    },
+  });
+
+  if (user) {
+    throw new AppError(
+      status.CONFLICT,
+      "User with the given phone number already exists",
+    );
+  }
 };
 
 const registerMess = async (payload: IMessRegisterPayload) => {
@@ -29,6 +45,9 @@ const registerMess = async (payload: IMessRegisterPayload) => {
       "User with the given email already exists",
     );
   }
+
+  // check if the phone number is already registered
+  await checkDuplicatePhone(phone);
 
   // hash the password
   const salt = await bcrypt.genSalt(10);
@@ -128,7 +147,98 @@ const loginMess = async (email: string, password: string) => {
   };
 };
 
+const registerMember = async (payload: IMemberRegisterPayload) => {
+  // destructure the payload
+  const { name, email, phone, password, messCode } = payload;
+
+  // check if the user already exists
+  const existingUser = await checkUser(email);
+
+  if (existingUser) {
+    throw new AppError(
+      status.CONFLICT,
+      "User with the given email already exists",
+    );
+  }
+
+  // check if the phone number is already registered
+  await checkDuplicatePhone(phone);
+
+  // hash the password
+  const salt = await bcrypt.genSalt(10);
+  const passwordHash = await bcrypt.hash(password, salt);
+
+  // find the mess by messCode
+  const mess = await prisma.mess.findUnique({
+    where: {
+      messCode,
+    },
+  });
+
+  if (!mess) {
+    throw new AppError(status.NOT_FOUND, "Mess not found");
+  }
+
+  // create the user and user-role in the database by using a transaction
+  const newUser = await prisma.$transaction(async (prisma) => {
+    // create the user
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        phone,
+        passwordHash,
+      },
+    });
+
+    // get the roleId for the "member" role
+    const memberRole = await prisma.role.findUnique({
+      where: {
+        name: "MEMBER",
+      },
+    });
+
+    if (!memberRole) {
+      throw new AppError(status.INTERNAL_SERVER_ERROR, "Member role not found");
+    }
+
+    // create the userRole for the user
+    await prisma.userRole.create({
+      data: {
+        userId: user.id,
+        roleId: memberRole.id,
+      },
+    });
+
+    // create the messMember for the user
+    await prisma.messMember.create({
+      data: {
+        userId: user.id,
+        messId: mess.id,
+      },
+    });
+
+    return user;
+  });
+
+  // omit the passwordHash before returning the user
+  const { passwordHash: _passwordHash, ...userWithoutPassword } = newUser;
+
+  // create access token
+  const accessToken = tokenUtils.getAccessToken({
+    userId: userWithoutPassword.id,
+    email: userWithoutPassword.email,
+    name: userWithoutPassword.name,
+  });
+
+  return {
+    user: userWithoutPassword,
+    accessToken,
+  };
+};
+
 export const authServices = {
   registerMess,
   loginMess,
+  registerMember,
 };

@@ -8,3 +8,11 @@ export interface IMessRegisterPayload {
   messType: MessType;
   phone: string;
 }
+
+export interface IMemberRegisterPayload {
+  name: string;
+  email: string;
+  password: string;
+  phone: string;
+  messCode: string;
+}
