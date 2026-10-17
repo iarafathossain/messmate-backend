@@ -1,16 +1,14 @@
 model MealRecord {
-    id        String   @id @default(uuid()) @db.Uuid
-    memberId  String   @db.Uuid
-    mealDate  DateTime @db.Date
-    mealType  MealType
-    mealRate  Decimal  @db.Decimal(10, 2) // Price snapshot at recording time
-    createdAt DateTime @default(now())
+    id           String   @id @default(uuid()) @db.Uuid
+    messMemberId String   @db.Uuid
+    mealDate     DateTime @db.Date
+    mealType     MealType
+    mealRate     Decimal  @db.Decimal(10, 2)
+    createdAt    DateTime @default(now())
 
-    // Each record belongs to one member
-    member Member @relation(fields: [memberId], references: [id], onDelete: Cascade)
+    member MessMember @relation(fields: [messMemberId], references: [id], onDelete: Cascade)
 
-    // A member has at most one daily meal record
-    @@unique([memberId, mealDate])
+    @@unique([messMemberId, mealDate])
     @@index([mealDate])
     @@map("meal_records")
 }

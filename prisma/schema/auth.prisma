@@ -1,0 +1,37 @@
+model User {
+    id           String   @id @default(uuid()) @db.Uuid
+    name         String
+    email        String   @unique
+    phone        String   @unique
+    passwordHash String
+    createdAt    DateTime @default(now())
+
+    roleAssignments UserRole[]
+    managedMess     Mess?       @relation("MessManager")
+    membership      MessMember?
+
+    @@map("users")
+}
+
+model Role {
+    id        String   @id @default(uuid()) @db.Uuid
+    name      String   @unique
+    createdAt DateTime @default(now())
+
+    users UserRole[]
+
+    @@map("roles")
+}
+
+model UserRole {
+    userId     String   @db.Uuid
+    roleId     String   @db.Uuid
+    assignedAt DateTime @default(now())
+
+    user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+    role Role @relation(fields: [roleId], references: [id], onDelete: Cascade)
+
+    @@id([userId, roleId])
+    @@index([roleId])
+    @@map("user_roles")
+}

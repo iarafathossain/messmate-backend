@@ -1,16 +1,16 @@
 model Mess {
-    id           String   @id @default(uuid()) @db.Uuid
-    name         String
-    email        String   @unique
-    passwordHash String
-    messType     MessType
-    createdAt    DateTime @default(now())
-    updatedAt    DateTime @updatedAt
+    id        String   @id @default(uuid()) @db.Uuid
+    messName  String
+    messCode  String   @unique
+    messType  MessType
+    managerId String   @unique @db.Uuid
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
 
-    // One mess has many members, expenses, and deposits through its members
-    members   Member[]
-    mealRates MealRate?
-    expenses  Expense[]
+    manager  User         @relation("MessManager", fields: [managerId], references: [id], onDelete: Restrict)
+    members  MessMember[]
+    mealRate MealRate?
+    expenses Expense[]
 
-    @@map("mess")
+    @@map("messes")
 }

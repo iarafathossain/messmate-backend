@@ -7,6 +7,14 @@ export const registerMessZodSchema = zod
       .string()
       .min(1, "Name is required")
       .max(100, "Name must be at most 100 characters long"),
+    messName: zod
+      .string()
+      .min(1, "Mess name is required")
+      .max(100, "Mess name must be at most 100 characters long"),
+    phone: zod
+      .string()
+      .min(1, "Phone number is required")
+      .regex(/^0\d{10}$/, "Phone number must be 11 digits and start with 0"),
     email: zod.email("Invalid email address"),
     messType: zod.enum(MessType),
     password: zod

@@ -6,8 +6,8 @@ import { tokenUtils } from "../../utils/token";
 import { IMessRegisterPayload } from "./interfaces";
 
 const checkUser = async (email: string) => {
-  // check if the mess exists with the given email
-  const user = await prisma.mess.findUnique({
+  // check if the user exists with the given email
+  const user = await prisma.user.findUnique({
     where: {
       email,
     },
@@ -18,7 +18,7 @@ const checkUser = async (email: string) => {
 
 const registerMess = async (payload: IMessRegisterPayload) => {
   // destructure the payload
-  const { name, email, messType, password } = payload;
+  const { name, messName, email, phone, messType, password } = payload;
 
   // check if the user already exists
   const existingUser = await checkUser(email);
@@ -34,14 +34,51 @@ const registerMess = async (payload: IMessRegisterPayload) => {
   const salt = await bcrypt.genSalt(10);
   const passwordHash = await bcrypt.hash(password, salt);
 
-  // create a new mess
-  const newUser = await prisma.mess.create({
-    data: {
-      name,
-      email,
-      passwordHash,
-      messType,
-    },
+  // create the user, user-role, and mess in the database by using a transaction
+  const newUser = await prisma.$transaction(async (prisma) => {
+    // create the user
+    const user = await prisma.user.create({
+      data: {
+        name,
+        email,
+        phone,
+        passwordHash,
+      },
+    });
+
+    // get the roleId for the "manager" role
+    const managerRole = await prisma.role.findUnique({
+      where: {
+        name: "MANAGER",
+      },
+    });
+
+    if (!managerRole) {
+      throw new AppError(
+        status.INTERNAL_SERVER_ERROR,
+        "Manager role not found",
+      );
+    }
+
+    // create the userRole for the user
+    await prisma.userRole.create({
+      data: {
+        userId: user.id,
+        roleId: managerRole.id,
+      },
+    });
+
+    // create the mess
+    await prisma.mess.create({
+      data: {
+        messName,
+        messType,
+        managerId: user.id,
+        messCode: Math.random().toString(36).substring(2, 8).toUpperCase(), // generate a random 6-character alphanumeric code
+      },
+    });
+
+    return user;
   });
 
   // omit the passwordHash before returning the user

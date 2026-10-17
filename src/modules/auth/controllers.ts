@@ -4,11 +4,13 @@ import { tokenUtils } from "../../utils/token";
 import { authServices } from "./services";
 
 const registerMess = catchAsync(async (req, res) => {
-  const { name, email, password, messType } = req.body;
+  const { name, messName, email, phone, password, messType } = req.body;
 
   const result = await authServices.registerMess({
     name,
     email,
+    phone,
+    messName,
     password,
     messType,
   });

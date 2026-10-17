@@ -12,9 +12,9 @@ router.post(
   authControllers.registerMess,
 );
 
-// POST: api/v1/auth/login-mess
+// POST: api/v1/auth/login
 router.post(
-  "/login-mess",
+  "/login",
   validateRequest(loginMessZodSchema),
   authControllers.loginMess,
 );
