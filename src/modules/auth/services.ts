@@ -97,7 +97,7 @@ const registerMess = async (payload: IMessRegisterPayload) => {
       },
     });
 
-    return user;
+    return { ...user, role: managerRole.name };
   });
 
   // omit the passwordHash before returning the user
@@ -105,9 +105,10 @@ const registerMess = async (payload: IMessRegisterPayload) => {
 
   // create access token
   const accessToken = tokenUtils.getAccessToken({
-    userId: userWithoutPassword.id,
-    email: userWithoutPassword.email,
-    name: userWithoutPassword.name,
+    userId: newUser.id,
+    email: newUser.email,
+    name: newUser.name,
+    role: newUser.role,
   });
 
   return {
@@ -116,7 +117,7 @@ const registerMess = async (payload: IMessRegisterPayload) => {
   };
 };
 
-const loginMess = async (email: string, password: string) => {
+const login = async (email: string, password: string) => {
   // check if the user exists
   const user = await checkUser(email);
 
@@ -131,6 +132,20 @@ const loginMess = async (email: string, password: string) => {
     throw new AppError(status.UNAUTHORIZED, "Invalid credentials");
   }
 
+  // get the role of the user
+  const userRole = await prisma.userRole.findUnique({
+    where: {
+      userId: user.id,
+    },
+    include: {
+      role: true,
+    },
+  });
+
+  if (!userRole) {
+    throw new AppError(status.INTERNAL_SERVER_ERROR, "User role not found");
+  }
+
   // omit the passwordHash before returning the user
   const { passwordHash: _passwordHash, ...userWithoutPassword } = user;
 
@@ -139,10 +154,11 @@ const loginMess = async (email: string, password: string) => {
     userId: userWithoutPassword.id,
     email: userWithoutPassword.email,
     name: userWithoutPassword.name,
+    role: userRole.role.name,
   });
 
   return {
-    user: userWithoutPassword,
+    user: { ...userWithoutPassword, role: userRole.role.name },
     accessToken,
   };
 };
@@ -218,7 +234,7 @@ const registerMember = async (payload: IMemberRegisterPayload) => {
       },
     });
 
-    return user;
+    return { ...user, role: memberRole.name };
   });
 
   // omit the passwordHash before returning the user
@@ -229,6 +245,7 @@ const registerMember = async (payload: IMemberRegisterPayload) => {
     userId: userWithoutPassword.id,
     email: userWithoutPassword.email,
     name: userWithoutPassword.name,
+    role: userWithoutPassword.role,
   });
 
   return {
@@ -239,6 +256,6 @@ const registerMember = async (payload: IMemberRegisterPayload) => {
 
 export const authServices = {
   registerMess,
-  loginMess,
+  login,
   registerMember,
 };
