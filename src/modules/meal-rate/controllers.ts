@@ -1,17 +1,14 @@
 import { NextFunction, Request, Response } from "express";
 import { catchAsync } from "../../shared/catch-async";
 import { sendResponse } from "../../shared/send-response";
+import { getAuthUser } from "../../utils/get-auth-user";
 import { mealRateServices } from "./services";
 
 const upsertMealRate = catchAsync(
   async (req: Request, res: Response, next: NextFunction) => {
-    // attach the userId from the authenticated user to the request body
-    if (!req.user) {
-      return next(new Error("Authenticated user not found in request"));
-    }
+    const { userId } = getAuthUser(req);
 
-    req.body.userId = req.user.userId;
-    const { userId, fullMealRate, halfMealRate } = req.body;
+    const { fullMealRate, halfMealRate } = req.body;
 
     const updatedMealRate = await mealRateServices.upsertMealRate({
       fullMealRate,
@@ -28,6 +25,22 @@ const upsertMealRate = catchAsync(
   },
 );
 
+const getMealRate = catchAsync(
+  async (req: Request, res: Response, next: NextFunction) => {
+    const { userId } = getAuthUser(req);
+
+    const mealRate = await mealRateServices.getMealRate(userId);
+
+    sendResponse(res, {
+      httpStatusCode: 200,
+      success: true,
+      message: "Meal rate fetched successfully",
+      data: mealRate,
+    });
+  },
+);
+
 export const mealRateControllers = {
   upsertMealRate,
+  getMealRate,
 };

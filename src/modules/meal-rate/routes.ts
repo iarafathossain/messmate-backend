@@ -10,9 +10,12 @@ const router = Router();
 // POST: api/v1/meal-rate/upsert
 router.post(
   "/upsert",
-  validateRequest(upsertMealRateZodSchema),
   checkAuth(UserRoles.MANAGER),
+  validateRequest(upsertMealRateZodSchema),
   mealRateControllers.upsertMealRate,
 );
+
+// GET: api/v1/meal-rate
+router.get("/", checkAuth(UserRoles.MANAGER), mealRateControllers.getMealRate);
 
 export const mealRateRoutes = router;

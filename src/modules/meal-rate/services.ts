@@ -41,6 +41,38 @@ const upsertMealRate = async (payload: IMealRate) => {
   return mealRate;
 };
 
+export const getMealRate = async (userId: string) => {
+  // find the mess by managerId and get the meal rate through transaction
+  const mealRate = await prisma.$transaction(async (prisma) => {
+    // find the mess by managerId
+    const mess = await prisma.mess.findUnique({
+      where: {
+        managerId: userId,
+      },
+    });
+
+    if (!mess) {
+      throw new AppError(status.NOT_FOUND, "Mess not found");
+    }
+
+    // get meal rate
+    const mealRate = await prisma.mealRate.findUnique({
+      where: {
+        messId: mess.id,
+      },
+    });
+
+    if (!mealRate) {
+      throw new AppError(status.NOT_FOUND, "Meal rate not found");
+    }
+
+    return mealRate;
+  });
+
+  return mealRate;
+};
+
 export const mealRateServices = {
   upsertMealRate,
+  getMealRate,
 };
