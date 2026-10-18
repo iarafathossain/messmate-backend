@@ -31,7 +31,7 @@ const registerMess = catchAsync(async (req, res) => {
 const loginMess = catchAsync(async (req, res) => {
   const { email, password } = req.body;
 
-  const result = await authServices.loginMess(email, password);
+  const result = await authServices.login(email, password);
 
   // set cookie if access token is generated
   if (result.accessToken) {

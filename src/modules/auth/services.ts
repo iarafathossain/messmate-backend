@@ -1,7 +1,10 @@
 import bcrypt from "bcryptjs";
 import status from "http-status";
 import AppError from "../../errors/app-error";
+import { UserRoles } from "../../interfaces/auth-type";
 import { prisma } from "../../libs/prisma";
+import { generateMessCode } from "../../utils/generate-messcode";
+import { getRoleOrThrow } from "../../utils/get-role";
 import { tokenUtils } from "../../utils/token";
 import { IMemberRegisterPayload, IMessRegisterPayload } from "./interfaces";
 
@@ -32,6 +35,20 @@ const checkDuplicatePhone = async (phone: string) => {
   }
 };
 
+const hashPassword = async (password: string) => {
+  const passwordHash = await bcrypt.hash(password, 10);
+
+  return passwordHash;
+};
+
+const normalizeEmail = (email: string) => {
+  return email.trim().toLowerCase();
+};
+
+const normalizePhone = (phone: string) => {
+  return phone.trim();
+};
+
 const registerMess = async (payload: IMessRegisterPayload) => {
   // destructure the payload
   const { name, messName, email, phone, messType, password } = payload;
@@ -45,13 +62,16 @@ const registerMess = async (payload: IMessRegisterPayload) => {
       "User with the given email already exists",
     );
   }
+  // normalize the email
+  const normalizedEmail = normalizeEmail(email);
+  // normalize the phone number
+  const normalizedPhone = normalizePhone(phone);
 
   // check if the phone number is already registered
-  await checkDuplicatePhone(phone);
+  await checkDuplicatePhone(normalizedPhone);
 
   // hash the password
-  const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash(password, salt);
+  const passwordHash = await hashPassword(password);
 
   // create the user, user-role, and mess in the database by using a transaction
   const newUser = await prisma.$transaction(async (prisma) => {
@@ -59,25 +79,14 @@ const registerMess = async (payload: IMessRegisterPayload) => {
     const user = await prisma.user.create({
       data: {
         name,
-        email,
-        phone,
+        email: normalizedEmail,
+        phone: normalizedPhone,
         passwordHash,
       },
     });
 
     // get the roleId for the "manager" role
-    const managerRole = await prisma.role.findUnique({
-      where: {
-        name: "MANAGER",
-      },
-    });
-
-    if (!managerRole) {
-      throw new AppError(
-        status.INTERNAL_SERVER_ERROR,
-        "Manager role not found",
-      );
-    }
+    const managerRole = await getRoleOrThrow(prisma, UserRoles.MANAGER);
 
     // create the userRole for the user
     await prisma.userRole.create({
@@ -93,7 +102,7 @@ const registerMess = async (payload: IMessRegisterPayload) => {
         messName,
         messType,
         managerId: user.id,
-        messCode: Math.random().toString(36).substring(2, 8).toUpperCase(), // generate a random 6-character alphanumeric code
+        messCode: generateMessCode(),
       },
     });
 
@@ -119,17 +128,18 @@ const registerMess = async (payload: IMessRegisterPayload) => {
 
 const login = async (email: string, password: string) => {
   // check if the user exists
-  const user = await checkUser(email);
+  const normalizedEmail = normalizeEmail(email);
+  const user = await checkUser(normalizedEmail);
 
   if (!user) {
-    throw new AppError(status.NOT_FOUND, "User not found");
+    throw new AppError(status.NOT_FOUND, "Invalid credentials!");
   }
 
   // compare the password
   const isPasswordValid = await bcrypt.compare(password, user.passwordHash);
 
   if (!isPasswordValid) {
-    throw new AppError(status.UNAUTHORIZED, "Invalid credentials");
+    throw new AppError(status.UNAUTHORIZED, "Invalid credentials!");
   }
 
   // get the role of the user
@@ -176,43 +186,42 @@ const registerMember = async (payload: IMemberRegisterPayload) => {
       "User with the given email already exists",
     );
   }
+  // normalize the email
+  const normalizedEmail = normalizeEmail(email);
+
+  // normalize the phone number
+  const normalizedPhone = normalizePhone(phone);
 
   // check if the phone number is already registered
-  await checkDuplicatePhone(phone);
+  await checkDuplicatePhone(normalizedPhone);
 
   // hash the password
-  const salt = await bcrypt.genSalt(10);
-  const passwordHash = await bcrypt.hash(password, salt);
-
-  // find the mess by messCode
-  const mess = await prisma.mess.findUnique({
-    where: {
-      messCode,
-    },
-  });
-
-  if (!mess) {
-    throw new AppError(status.NOT_FOUND, "Mess not found");
-  }
+  const passwordHash = await hashPassword(password);
 
   // create the user and user-role in the database by using a transaction
   const newUser = await prisma.$transaction(async (prisma) => {
+    // find the mess by messCode
+    const mess = await prisma.mess.findUnique({
+      where: {
+        messCode,
+      },
+    });
+
+    if (!mess) {
+      throw new AppError(status.NOT_FOUND, "Mess not found");
+    }
     // create the user
     const user = await prisma.user.create({
       data: {
         name,
-        email,
-        phone,
+        email: normalizedEmail,
+        phone: normalizedPhone,
         passwordHash,
       },
     });
 
     // get the roleId for the "member" role
-    const memberRole = await prisma.role.findUnique({
-      where: {
-        name: "MEMBER",
-      },
-    });
+    const memberRole = await getRoleOrThrow(prisma, UserRoles.MEMBER);
 
     if (!memberRole) {
       throw new AppError(status.INTERNAL_SERVER_ERROR, "Member role not found");
