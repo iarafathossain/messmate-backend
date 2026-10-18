@@ -16,6 +16,10 @@ router.post(
 );
 
 // GET: api/v1/meal-rate
-router.get("/", checkAuth(UserRoles.MANAGER), mealRateControllers.getMealRate);
+router.get(
+  "/",
+  checkAuth(UserRoles.MANAGER, UserRoles.MEMBER),
+  mealRateControllers.getMealRate,
+);
 
 export const mealRateRoutes = router;
