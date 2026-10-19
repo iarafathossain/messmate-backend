@@ -11,7 +11,9 @@ export const checkAuth =
   async (req: Request, res: Response, next: NextFunction) => {
     try {
       // access token verification
-      const accessToken = cookieUtils.getCookie(req, "access_token");
+      const accessToken =
+        cookieUtils.getCookie(req, "access-token") ||
+        req.headers.authorization?.replace(/^Bearer\s+/i, "");
 
       if (!accessToken) {
         return next(

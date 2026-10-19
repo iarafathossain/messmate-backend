@@ -54,8 +54,7 @@ export const registerMemberZodSchema = zod
     email: zod.email("Invalid email address"),
     messCode: zod
       .string()
-      .min(1, "Mess code is required")
-      .regex(/^[A-Z0-9]{6}$/, "Mess code must be 6 characters long"),
+      .min(1, "Mess code is required"),
     password: zod
       .string()
       .min(1, "Password is required")

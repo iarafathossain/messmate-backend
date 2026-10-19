@@ -3,11 +3,10 @@ model Expense {
     messId      String   @db.Uuid
     description String
     amount      Decimal  @db.Decimal(10, 2)
-    expenseDate DateTime @db.Date
     createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
 
     mess Mess @relation(fields: [messId], references: [id], onDelete: Cascade)
 
-    @@index([messId, expenseDate])
     @@map("expenses")
 }

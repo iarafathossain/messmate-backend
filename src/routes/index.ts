@@ -4,6 +4,8 @@ import { depositRoutes } from "../modules/deposit/routes";
 import { mealRateRoutes } from "../modules/meal-rate/routes";
 import { mealRecordRoutes } from "../modules/meal-record/routes";
 import { messMemberRoutes } from "../modules/mess-member/routes";
+import { dashboardRoutes } from "../modules/dashboard/routes";
+import { messExpenseRoutes } from "../modules/mess-expense/routes";
 
 const router = Router();
 
@@ -17,5 +19,7 @@ router.use("/mess-member", messMemberRoutes);
 router.use("/deposit", depositRoutes);
 // meal record routes
 router.use("/meal-record", mealRecordRoutes);
+router.use("/dashboard", dashboardRoutes);
+router.use("/expense", messExpenseRoutes);
 
 export const indexRoutes = router;

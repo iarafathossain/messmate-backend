@@ -3,10 +3,13 @@ model MealRecord {
     messMemberId String   @db.Uuid
     mealType     MealType
     mealRate     Decimal  @db.Decimal(10, 2)
+    mealDate     DateTime? @db.Date
     createdAt    DateTime @default(now())
     updatedAt    DateTime @updatedAt
 
     member MessMember @relation(fields: [messMemberId], references: [id], onDelete: Cascade)
 
+    @@unique([messMemberId, mealDate])
+    @@index([mealDate])
     @@map("meal_records")
 }

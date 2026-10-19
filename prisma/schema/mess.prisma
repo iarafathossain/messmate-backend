@@ -7,7 +7,7 @@ model Mess {
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
 
-    manager  User         @relation("MessManager", fields: [managerId], references: [id], onDelete: Restrict)
+    manager  User         @relation("MessManager", fields: [managerId], references: [id], onDelete: Cascade)
     members  MessMember[]
     mealRate MealRate?
     expenses Expense[]

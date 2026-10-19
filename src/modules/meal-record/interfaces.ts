@@ -5,4 +5,6 @@ export interface IUpsertMealRecordPayload {
   mealRecordId?: string;
   managerId: string;
   mealType: MealType;
+  mealDate: string;
+  mealRate?: number;
 }

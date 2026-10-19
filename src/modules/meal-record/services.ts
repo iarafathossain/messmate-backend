@@ -20,7 +20,7 @@ const getMealRate = (
 };
 
 const upsertSingleMealRecord = async (payload: IUpsertMealRecordPayload) => {
-  const { messMemberId, mealRecordId, managerId, mealType } = payload;
+  const { messMemberId, mealRecordId, managerId, mealType, mealDate, mealRate: requestedRate } = payload;
 
   // check if the mess member exists and belongs to the same mess as the manager
   const messMember = await prisma.messMember.findUnique({
@@ -32,7 +32,6 @@ const upsertSingleMealRecord = async (payload: IUpsertMealRecordPayload) => {
   }
 
   const mess = await prisma.mess.findUnique({ where: { managerId } });
-  console.log("mess", mess);
   if (!mess) {
     throw new Error("Mess not found");
   }
@@ -51,42 +50,16 @@ const upsertSingleMealRecord = async (payload: IUpsertMealRecordPayload) => {
   }
 
   // calculate the meal rate
-  const mealRate = getMealRate(messMealRate, mealType);
+  const mealRate = requestedRate ?? getMealRate(messMealRate, mealType);
 
-  // upsert the meal record and update the deposit in a transaction
-  return prisma.$transaction(async (tx) => {
-    // deduct the meal rate from the latest deposit, or create a negative one
-    const deposit = await tx.deposit.findFirst({
-      where: { messMemberId },
-      orderBy: { createdAt: "desc" },
-    });
-
-    if (deposit) {
-      await tx.deposit.update({
-        where: { id: deposit.id },
-        data: { amount: { decrement: mealRate } },
-      });
-    } else {
-      await tx.deposit.create({
-        data: {
-          messMemberId,
-          amount: -mealRate,
-          note: "Auto-generated deposit for meal record update",
-        },
-      });
-    }
-
-    // update the existing meal record, or create a new one
-    if (mealRecordId) {
-      return tx.mealRecord.update({
-        where: { id: mealRecordId },
-        data: { messMemberId, mealType },
-      });
-    }
-
-    return tx.mealRecord.create({
-      data: { messMemberId, mealType, mealRate },
-    });
+  const data = { messMemberId, mealType, mealRate, mealDate: new Date(`${mealDate}T00:00:00.000Z`) };
+  if (mealRecordId) {
+    return prisma.mealRecord.update({ where: { id: mealRecordId }, data });
+  }
+  return prisma.mealRecord.upsert({
+    where: { messMemberId_mealDate: { messMemberId, mealDate: data.mealDate } },
+    update: { mealType, mealRate, mealDate: data.mealDate },
+    create: data,
   });
 };
 

@@ -37,7 +37,7 @@ const getAccessToken = (payload: JwtPayload) => {
 
 // Set Access token cookie
 const setAccessTokenCookie = (res: Response, token: string) => {
-  cookieUtils.setCookie(res, "access_token", token, {
+  cookieUtils.setCookie(res, "access-token", token, {
     httpOnly: true,
     secure: true,
     sameSite: "none",
