@@ -2,6 +2,8 @@
 
 MessMate is an expense and meal tracker for shared dining groups (messes). Managers can manage members, meal rates, deposits, and expenses, while members can track their meal consumption.
 
+For local setup and running instructions, see the Local Development Setup guide at [messmate-frontend/README.md](https://github.com/iarafathossain/messmate-frontend)
+
 ## Key Features
 
 - User registration and login for mess managers and members
