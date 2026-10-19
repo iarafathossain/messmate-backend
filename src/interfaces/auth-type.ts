@@ -15,7 +15,7 @@ export interface IRequestUser {
 }
 
 export const UserRoles = {
-  MANAGER: "MANAGER",
+  MESS: "MESS",
   MEMBER: "MEMBER",
 } as const;
 

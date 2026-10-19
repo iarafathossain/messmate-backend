@@ -86,7 +86,7 @@ const registerMess = async (payload: IMessRegisterPayload) => {
     });
 
     // get the roleId for the "manager" role
-    const managerRole = await getRoleOrThrow(prisma, UserRoles.MANAGER);
+    const managerRole = await getRoleOrThrow(prisma, UserRoles.MESS);
 
     // create the userRole for the user
     await prisma.userRole.create({

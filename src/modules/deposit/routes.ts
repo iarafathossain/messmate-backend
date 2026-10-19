@@ -10,7 +10,7 @@ const router = Router();
 // POST: api/deposit/upsert
 router.post(
   "/upsert",
-  checkAuth(UserRoles.MANAGER),
+  checkAuth(UserRoles.MESS),
   validateRequest(upsertDepositZodSchema),
   depositControllers.upsertDeposit,
 );

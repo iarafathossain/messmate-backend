@@ -24,7 +24,7 @@ const registerMess = catchAsync(async (req, res) => {
     httpStatusCode: 201,
     success: true,
     message: "Mess registered successfully",
-    data: result.user,
+    data: result,
   });
 });
 
@@ -42,7 +42,7 @@ const loginMess = catchAsync(async (req, res) => {
     httpStatusCode: 200,
     success: true,
     message: "Login successful",
-    data: result.user,
+    data: result,
   });
 });
 

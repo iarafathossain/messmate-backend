@@ -10,7 +10,7 @@ const router = Router();
 // POST: api/meal-record/upsert-single-meal-record
 router.post(
   "/upsert-single-meal-record",
-  checkAuth(UserRoles.MANAGER),
+  checkAuth(UserRoles.MESS),
   validateRequest(upsertMealRecordZodSchema),
   mealRecordControllers.upsertSingleMealRecord,
 );

@@ -10,7 +10,7 @@ const router = Router();
 // POST: api/v1/meal-rate/upsert
 router.post(
   "/upsert",
-  checkAuth(UserRoles.MANAGER),
+  checkAuth(UserRoles.MESS),
   validateRequest(upsertMealRateZodSchema),
   mealRateControllers.upsertMealRate,
 );
@@ -18,7 +18,7 @@ router.post(
 // GET: api/v1/meal-rate
 router.get(
   "/",
-  checkAuth(UserRoles.MANAGER, UserRoles.MEMBER),
+  checkAuth(UserRoles.MESS, UserRoles.MEMBER),
   mealRateControllers.getMealRate,
 );
 
