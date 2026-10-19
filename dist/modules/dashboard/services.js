@@ -51,7 +51,9 @@ const getMonthlySheet = async (userId, year, month) => {
         expenses,
         totals: {
             revenue: members.reduce((sum, member) => sum + member.deposits.reduce((s, d) => s + Number(d.amount), 0), 0),
-            expenses: expenses.reduce((sum, expense) => sum + Number(expense.amount), 0),
+            expenses: expenses.reduce((sum, expense) => sum + Number(expense.amount), 0) +
+                members.reduce((sum, member) => sum +
+                    member.mealRecords.reduce((mealSum, meal) => mealSum + Number(meal.mealRate), 0), 0),
         },
     };
 };
@@ -77,7 +79,9 @@ const getMealSheet = async (userId) => {
         expenses,
         totals: {
             revenue: members.reduce((sum, member) => sum + member.deposits.reduce((s, d) => s + Number(d.amount), 0), 0),
-            expenses: expenses.reduce((sum, expense) => sum + Number(expense.amount), 0),
+            expenses: expenses.reduce((sum, expense) => sum + Number(expense.amount), 0) +
+                members.reduce((sum, member) => sum +
+                    member.mealRecords.reduce((mealSum, meal) => mealSum + Number(meal.mealRate), 0), 0),
         },
     };
 };

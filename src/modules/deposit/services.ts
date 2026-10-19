@@ -2,7 +2,7 @@ import { prisma } from "../../libs/prisma";
 import { IUpsertDepositPayload } from "./interfaces";
 
 const upsertDeposit = async (payload: IUpsertDepositPayload) => {
-  const { messMemberId, amount, note, managerId } = payload;
+  const { messMemberId, amount, depositDate, note, managerId } = payload;
 
   // check if the mess member exists
   const messMember = await prisma.messMember.findUnique({
@@ -17,28 +17,11 @@ const upsertDeposit = async (payload: IUpsertDepositPayload) => {
     if (!mess || mess.id !== messMember.messId) throw new Error("Member does not belong to your mess");
   }
 
-  // if deposit exists, update the existing deposit
-  const existingDeposit = await prisma.deposit.findFirst({
-    where: { messMemberId },
-    orderBy: { createdAt: "desc" },
-  });
-
-  if (existingDeposit) {
-    const updatedDeposit = await prisma.deposit.update({
-      where: { id: existingDeposit.id },
-      data: {
-        amount,
-        note,
-      },
-    });
-    return updatedDeposit;
-  }
-
-  // create a new deposit
   const newDeposit = await prisma.deposit.create({
     data: {
       messMemberId,
       amount,
+      depositDate,
       note,
     },
   });

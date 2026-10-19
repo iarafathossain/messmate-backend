@@ -2,6 +2,7 @@ model Deposit {
     id           String   @id @default(uuid()) @db.Uuid
     messMemberId String   @db.Uuid
     amount       Decimal  @db.Decimal(10, 2)
+    depositDate  DateTime @db.Date
     note         String?
     createdAt    DateTime @default(now())
     updatedAt    DateTime @updatedAt

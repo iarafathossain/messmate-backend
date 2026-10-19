@@ -145,6 +145,7 @@ exports.DepositScalarFieldEnum = {
     id: 'id',
     messMemberId: 'messMemberId',
     amount: 'amount',
+    depositDate: 'depositDate',
     note: 'note',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
