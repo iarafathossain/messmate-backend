@@ -1,0 +1,12 @@
+model Expense {
+    id          String   @id @default(uuid()) @db.Uuid
+    messId      String   @db.Uuid
+    description String
+    amount      Decimal  @db.Decimal(10, 2)
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+
+    mess Mess @relation(fields: [messId], references: [id], onDelete: Cascade)
+
+    @@map("expenses")
+}

@@ -2,7 +2,6 @@ export interface IResponseData<T> {
   httpStatusCode: number;
   success: boolean;
   message: string;
-  requiredEmailVerification?: boolean;
   data?: T;
   meta?: {
     page: number;

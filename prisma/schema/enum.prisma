@@ -1,0 +1,11 @@
+// Mess category
+enum MessType {
+    BOYS
+    GIRLS
+}
+
+// Available daily meal types
+enum MealType {
+    FULL
+    HALF
+}
